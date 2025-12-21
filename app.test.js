@@ -7,7 +7,7 @@ let server; // Define a variable to hold the server instance
 // This block runs once before all tests
 beforeAll((done) => {
   // Start the server on a specific port for testing
-  server = app.listen(3000, () => {
+  server = app.listen(0, () => {
     console.log("Test server running on port 3000");
     done(); // Signal that the setup is complete
   });
