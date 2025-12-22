@@ -80,7 +80,7 @@ pipeline {
             $IMAGE_NAME:prod-${BUILD_NUMBER}
 
           echo "Waiting for production service..."
-          sleep 5
+          sleep 15
 
           echo "Production health check..."
           curl -f http://localhost:$PROD_PORT || exit 1
