@@ -20,13 +20,17 @@ pipeline {
                 curl -H "Content-Type: application/json" \
                 -X POST \
                 -d "{
-                  \\"username\\": \\"Jenkins CI\\",
-                  \\"content\\": \\"❌ Build FAILED (Lint)\\n\
-                  📦 Job: ${JOB_NAME}\\n\
-                  🌿 Branch: ${BRANCH_NAME}\\n\
-                  🔢 Build: #${BUILD_NUMBER}\\n\
-                  🔗 URL: ${BUILD_URL}\\"
-                }" \
+                  "username": "Jenkins CI",
+                  "content": "❌ **Build FAILED**\\n\\n\
+          👤 Name: 林采穎\\n\
+          🆔 Student ID: B13705007\\n\
+          📦 Job Name: ${JOB_NAME}\\n\
+          🔢 Build Number: #${BUILD_NUMBER}\\n\
+          🌿 Branch: ${BRANCH_NAME}\\n\
+          📂 GitHub Repo: ${GIT_URL}\\n\
+          📊 Status: ${currentBuild.currentResult}\\n\
+          🔗 Build URL: ${BUILD_URL}"
+                }' \
                 $DISCORD_WEBHOOK
               '''
             }
