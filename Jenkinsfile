@@ -5,8 +5,6 @@ pipeline {
     IMAGE_NAME = "tsai0120/myapp"
     DEV_CONTAINER = "dev-app"
     DEV_PORT = "8081"
-    DOCKER_USER = credentials('dockerhub-creds').username
-    DOCKER_PASS = credentials('dockerhub-creds').password
   }
 
   stages {
@@ -35,7 +33,7 @@ pipeline {
       }
       steps {
         script {
-          // 🔹 1. 讀 package.json 的 version
+          // 1️⃣ 讀 semantic version
           def version = sh(
             script: "node -p \"require('./package.json').version\"",
             returnStdout: true
@@ -43,7 +41,7 @@ pipeline {
 
           echo "Semantic version: v${version}"
 
-          // 🔹 2. Docker build（兩個 tag）
+          // 2️⃣ build image（兩個 tag）
           sh """
             docker build \
               -t ${IMAGE_NAME}:dev-${BUILD_NUMBER} \
@@ -51,22 +49,22 @@ pipeline {
               .
           """
 
-          // 🔹 3. Push 到 Docker Hub
+          // 3️⃣ login + push（一定要用 withCredentials）
           withCredentials([
             usernamePassword(
-              credentialsId: 'dockerhub',
+              credentialsId: 'dockerhub-creds',
               usernameVariable: 'DOCKER_USER',
               passwordVariable: 'DOCKER_PASS'
             )
           ]) {
             sh """
-              echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+              echo "\$DOCKER_PASS" | docker login -u "\$DOCKER_USER" --password-stdin
               docker push ${IMAGE_NAME}:dev-${BUILD_NUMBER}
               docker push ${IMAGE_NAME}:v${version}
             """
           }
 
-          // 🔹 4. 部署 dev container
+          // 4️⃣ deploy dev
           sh """
             docker rm -f ${DEV_CONTAINER} || true
             docker run -d \
