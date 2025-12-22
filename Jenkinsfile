@@ -15,30 +15,37 @@ pipeline {
           try {
             sh 'npm run lint'
           } catch (err) {
+
             withCredentials([string(credentialsId: 'discord-webhook', variable: 'DISCORD_WEBHOOK')]) {
               sh '''
+                cat <<EOF > payload.json
+    {
+      "username": "Jenkins CI",
+      "content": "❌ **Build FAILED**\\n\\n\
+    👤 Name: 林采穎\\n\
+    🆔 Student ID: B13705007\\n\
+    📦 Job Name: ${JOB_NAME}\\n\
+    🔢 Build Number: #${BUILD_NUMBER}\\n\
+    🌿 Branch: ${BRANCH_NAME}\\n\
+    📂 GitHub Repo: ${GIT_URL}\\n\
+    📊 Status: FAILURE\\n\
+    🔗 Build URL: ${BUILD_URL}"
+    }
+    EOF
+
                 curl -H "Content-Type: application/json" \
-                -X POST \
-                -d "{
-                  "username": "Jenkins CI",
-                  "content": "❌ **Build FAILED**\\n\\n\
-          👤 Name: 林采穎\\n\
-          🆔 Student ID: B13705007\\n\
-          📦 Job Name: ${JOB_NAME}\\n\
-          🔢 Build Number: #${BUILD_NUMBER}\\n\
-          🌿 Branch: ${BRANCH_NAME}\\n\
-          📂 GitHub Repo: ${GIT_URL}\\n\
-          📊 Status: ${currentBuild.currentResult}\\n\
-          🔗 Build URL: ${BUILD_URL}"
-                }' \
-                $DISCORD_WEBHOOK
+                    -X POST \
+                    -d @payload.json \
+                    "$DISCORD_WEBHOOK"
               '''
             }
+
             error "Lint failed"
           }
         }
       }
     }
+
 
 
     stage('Install') {
