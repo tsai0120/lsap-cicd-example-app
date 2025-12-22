@@ -5,6 +5,8 @@ pipeline {
     IMAGE_NAME = "tsai0120/myapp"
     DEV_CONTAINER = "dev-app"
     DEV_PORT = "8081"
+    DOCKER_USER = credentials('dockerhub-creds').username
+    DOCKER_PASS = credentials('dockerhub-creds').password
   }
 
   stages {
