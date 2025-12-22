@@ -9,5 +9,3 @@ app.get("/", (req, res) => {
 });
 
 module.exports = app;
-
-const x = ; // bug
