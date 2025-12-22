@@ -11,9 +11,31 @@ pipeline {
 
     stage('Lint') {
       steps {
-        sh 'npm run lint'
+        script {
+          try {
+            sh 'npm run lint'
+          } catch (err) {
+            withCredentials([string(credentialsId: 'discord-webhook', variable: 'DISCORD_WEBHOOK')]) {
+              sh '''
+                curl -H "Content-Type: application/json" \
+                -X POST \
+                -d "{
+                  \\"username\\": \\"Jenkins CI\\",
+                  \\"content\\": \\"❌ Build FAILED (Lint)\\n\
+                  📦 Job: ${JOB_NAME}\\n\
+                  🌿 Branch: ${BRANCH_NAME}\\n\
+                  🔢 Build: #${BUILD_NUMBER}\\n\
+                  🔗 URL: ${BUILD_URL}\\"
+                }" \
+                $DISCORD_WEBHOOK
+              '''
+            }
+            error "Lint failed"
+          }
+        }
       }
     }
+
 
     stage('Install') {
       steps {
@@ -53,5 +75,42 @@ pipeline {
         '''
       }
     }
+    stage('Deploy (Production)') {
+      when {
+        branch 'main'
+      }
+      environment {
+        PROD_CONTAINER = "prod-app"
+        PROD_PORT = "8082"
+      }
+      steps {
+        sh '''
+          echo "Reading deploy.config..."
+          TARGET_TAG=$(cat deploy.config)
+          echo "Target image tag: $TARGET_TAG"
+
+          echo "Tagging production image..."
+          docker tag $IMAGE_NAME:$TARGET_TAG $IMAGE_NAME:prod-${BUILD_NUMBER}
+
+          echo "Stopping old prod container if exists..."
+          docker rm -f $PROD_CONTAINER || true
+
+          echo "Running new prod container..."
+          docker run -d \
+            --name $PROD_CONTAINER \
+            -p $PROD_PORT:3000 \
+            $IMAGE_NAME:prod-${BUILD_NUMBER}
+
+          echo "Waiting for production service..."
+          sleep 15
+
+          echo "Production health check..."
+          curl -f http://localhost:$PROD_PORT || exit 1
+        '''
+      }
+    }
+
   }
+
 }
+
