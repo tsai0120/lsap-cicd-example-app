@@ -10,41 +10,42 @@ pipeline {
   stages {
 
     stage('Lint') {
-      steps {
-        script {
-          try {
-            sh 'npm run lint'
-          } catch (err) {
+  steps {
+    script {
+      try {
+        sh 'npm run lint'
+      } catch (err) {
 
-            withCredentials([string(credentialsId: 'discord-webhook', variable: 'DISCORD_WEBHOOK')]) {
-              sh '''
-                cat <<EOF > payload.json
-    {
-      "username": "Jenkins CI",
-      "content": "❌ **Build FAILED**\\n\\n\
-    👤 Name: 林采穎\\n\
-    🆔 Student ID: B13705007\\n\
-    📦 Job Name: ${JOB_NAME}\\n\
-    🔢 Build Number: #${BUILD_NUMBER}\\n\
-    🌿 Branch: ${BRANCH_NAME}\\n\
-    📂 GitHub Repo: ${GIT_URL}\\n\
-    📊 Status: FAILURE\\n\
-    🔗 Build URL: ${BUILD_URL}"
-    }
-    EOF
+        withCredentials([string(credentialsId: 'discord-webhook', variable: 'DISCORD_WEBHOOK')]) {
+          sh '''
+cat <<'EOF' > payload.json
+{
+  "username": "Jenkins CI",
+  "content": "❌ **Build FAILED**\\n\\n\
+👤 Name: 林采穎\\n\
+🆔 Student ID: B13705007\\n\
+📦 Job Name: ${JOB_NAME}\\n\
+🔢 Build Number: #${BUILD_NUMBER}\\n\
+🌿 Branch: ${BRANCH_NAME}\\n\
+📂 GitHub Repo: ${GIT_URL}\\n\
+📊 Status: FAILURE\\n\
+🔗 Build URL: ${BUILD_URL}"
+}
+EOF
 
-                curl -H "Content-Type: application/json" \
-                    -X POST \
-                    -d @payload.json \
-                    "$DISCORD_WEBHOOK"
-              '''
-            }
-
-            error "Lint failed"
-          }
+curl -H "Content-Type: application/json" \
+     -X POST \
+     -d @payload.json \
+     "$DISCORD_WEBHOOK"
+          '''
         }
+
+        error "Lint failed"
       }
     }
+  }
+}
+
 
 
 
