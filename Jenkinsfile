@@ -9,7 +9,7 @@ pipeline {
 
   stages {
 
-    stage('Lint') {
+stage('Lint') {
   steps {
     script {
       try {
@@ -18,18 +18,24 @@ pipeline {
 
         withCredentials([string(credentialsId: 'discord-webhook', variable: 'DISCORD_WEBHOOK')]) {
           sh '''
-cat <<'EOF' > payload.json
+JOB_NAME_ESC="$JOB_NAME"
+BUILD_NUM_ESC="$BUILD_NUMBER"
+BRANCH_ESC="$BRANCH_NAME"
+GIT_URL_ESC="$GIT_URL"
+BUILD_URL_ESC="$BUILD_URL"
+
+cat <<EOF > payload.json
 {
   "username": "Jenkins CI",
   "content": "❌ **Build FAILED**\\n\\n\
 👤 Name: 林采穎\\n\
 🆔 Student ID: B13705007\\n\
-📦 Job Name: ${JOB_NAME}\\n\
-🔢 Build Number: #${BUILD_NUMBER}\\n\
-🌿 Branch: ${BRANCH_NAME}\\n\
-📂 GitHub Repo: ${GIT_URL}\\n\
+📦 Job Name: ${JOB_NAME_ESC}\\n\
+🔢 Build Number: #${BUILD_NUM_ESC}\\n\
+🌿 Branch: ${BRANCH_ESC}\\n\
+📂 GitHub Repo: ${GIT_URL_ESC}\\n\
 📊 Status: FAILURE\\n\
-🔗 Build URL: ${BUILD_URL}"
+🔗 Build URL: ${BUILD_URL_ESC}"
 }
 EOF
 
