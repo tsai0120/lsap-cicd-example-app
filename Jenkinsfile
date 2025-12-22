@@ -53,7 +53,7 @@ pipeline {
         '''
       }
     }
-        stage('Deploy (Production)') {
+    stage('Deploy (Production)') {
       when {
         branch 'main'
       }
@@ -67,10 +67,7 @@ pipeline {
           TARGET_TAG=$(cat deploy.config)
           echo "Target image tag: $TARGET_TAG"
 
-          echo "Pulling image from dev..."
-          docker pull $IMAGE_NAME:$TARGET_TAG
-
-          echo "Tagging as production image..."
+          echo "Tagging production image..."
           docker tag $IMAGE_NAME:$TARGET_TAG $IMAGE_NAME:prod-${BUILD_NUMBER}
 
           echo "Stopping old prod container if exists..."
@@ -90,6 +87,7 @@ pipeline {
         '''
       }
     }
+
 
   }
 }
